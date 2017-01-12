@@ -1,6 +1,9 @@
 package Segon.cazaSoldats;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.KeyEvent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,38 +20,32 @@ public class App extends GraphicsProgram
 {
 	private static final int AMPLADAPANTALLA = 1024;
 	private static final int ALTURAPANTALLA = 644;
+	private static final int AMPLADASOLDAT = 170;
+	private static final int ALTURASOLDAT = 200;
 	private int morts = 0;
 	private int escapats = 0;
 	GLabel marcador = new GLabel("Morts: "+morts+" Escapats: "+escapats);
 	public int gameOver = 5;
 	List<Soldat> soldats = new ArrayList();
+	Run runner = new Run(this, gameOver, soldats, AMPLADAPANTALLA, AMPLADASOLDAT);
 
-    	/*MouseListener mouse = new MouseListener() {
-    		public void mousePressed(MouseEvent e) {
-    		}
-			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-			}
-    	};*/
-	
 	@Override
 	public final void run() {
 		setSize(AMPLADAPANTALLA, ALTURAPANTALLA);
 		addMouseListeners();
+		addKeyListeners();
+		
+		
+		
 		clicaPerComencar();
-		Run runner = new Run(this, gameOver, soldats, AMPLADAPANTALLA);
 		runner.juga();
+		
+		GLabel label = new GLabel("Fi del joc!");
+		double x = (AMPLADAPANTALLA - label.getWidth()) / 2;
+		double y = (ALTURAPANTALLA + label.getAscent()) / 2;
+		add(label, x, y);
 	}
-    
+
 	/**
 	 * Clica per començar.
 	 */
@@ -56,41 +53,87 @@ public class App extends GraphicsProgram
 		GLabel label = new GLabel("Clica per començar");
 		double x = (AMPLADAPANTALLA - label.getWidth()) / 2;
 		double y = (ALTURAPANTALLA + label.getAscent()) / 2;
-		add(marcador, x, 0); // Actualiza al hacer marcador.setLabel() 
+		add(marcador, x,10); // Actualiza al hacer marcador.setLabel() 
 		add(label, x, y);
 		waitForClick();
 		remove(label);
 	}
-	
+
 	public int actualitzarMarcadorEscapat(){
 		escapats++;
 		marcador.setLabel("Morts: "+morts+" Escapats: "+escapats);
 		return escapats;
 	}
-	
+
 	public int actualitzarMarcadorMorts(){
 		morts++;
 		marcador.setLabel("Morts: "+morts+" Escapats: "+escapats);
 		return morts;
 	}
-	
+
 	public Soldat generaSoldat(){
 		Random rand = new Random();
-		int crear = rand.nextInt(1);
+		int crear = rand.nextInt(2);
 		boolean[] amic = {true, false};
-		GImage[] imatges = {new GImage("soldadobueno.png"), new GImage("soldadomalo.png")};
-		double[] aparicioX = { 0 - imatges[crear].getWidth(), AMPLADAPANTALLA + imatges[crear].getWidth()};
+		boolean amicSegur = amic[crear];
+		GImage imatge = null;
+		int direccio;
+		double[] aparicioX = { (0 - AMPLADASOLDAT), (AMPLADAPANTALLA)};
+		int aparicio = (int) aparicioX[rand.nextInt(2)];
+
+		if(amicSegur){
+			imatge = new GImage("soldadobueno.png");
+		}else{
+			imatge = new GImage("soldadomalo.png");
+		}
+
+		int y = rand.nextInt((int) (ALTURAPANTALLA - imatge.getHeight()));
+		imatge.setLocation(aparicio, y);
+		imatge.setSize(AMPLADASOLDAT, ALTURASOLDAT);
 		
-		Soldat soldat = new Soldat(amic[crear], aparicioX[rand.nextInt(1)], 
-				rand.nextInt((int) (ALTURAPANTALLA - imatges[crear].getHeight())), imatges[crear]);
-		
+		if(aparicio < 0){
+			direccio = 1;
+		}else{
+			direccio = -1;
+		}
+
+		Soldat soldat = new Soldat(amicSegur, imatge, direccio);
+
 		add(soldat.getImatge(), soldat.getX(), soldat.getY());
-		
+
 		return soldat;
 	}
 	
-    public void mousePressed(MouseEvent e) {
-		
+	public void save(){
+		try {
+			FileOutputStream archivo = new FileOutputStream("siSabe");
+			ObjectOutputStream guarda  = new ObjectOutputStream(archivo);
+			guarda.writeObject(soldats);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-    
+	
+	@Override
+	public void keyPressed(KeyEvent e){
+		int keyCode = e.getKeyCode();
+		
+		switch( keyCode ) { 
+		case KeyEvent.VK_S:
+			runner.actualiza();
+			save();
+			System.exit(0); // Cierra el programa
+			break;		
+		case KeyEvent.VK_X:
+			//fitxerCavallers.delete();
+			//fitxerContador.delete();
+			System.exit(0); // Cierra el programa
+			break;
+		}
+	}
+
 }
