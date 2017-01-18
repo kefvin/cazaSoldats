@@ -2,7 +2,10 @@ package Segon.cazaSoldats;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +30,13 @@ public class App extends GraphicsProgram
 	GLabel marcador = new GLabel("Morts: "+morts+" Escapats: "+escapats);
 	public int gameOver = 5;
 	List<Soldat> soldats = new ArrayList();
-	Run runner = new Run(this, gameOver, soldats, AMPLADAPANTALLA, AMPLADASOLDAT);
+	Run runner = null;
+	
+	
+	/*
+	 * No se crean correctamente en la X y la Y, no se guarda el arcador y no se borra el archivo
+	 * 
+	 */
 
 	@Override
 	public final void run() {
@@ -35,8 +44,8 @@ public class App extends GraphicsProgram
 		addMouseListeners();
 		addKeyListeners();
 		
-		
-		
+		buscaPartidaGuardada();
+		runner = new Run(this, gameOver, soldats, AMPLADAPANTALLA, AMPLADASOLDAT);
 		clicaPerComencar();
 		runner.juga();
 		
@@ -104,9 +113,43 @@ public class App extends GraphicsProgram
 		return soldat;
 	}
 	
+	private void buscaPartidaGuardada() {
+		try {
+			File esta = new File("guardat");
+			System.out.println(esta.getAbsolutePath());
+			if(esta.exists()){
+			FileInputStream archivo = new FileInputStream("guardat");
+			ObjectInputStream in = new ObjectInputStream(archivo);
+			soldats = (List<Soldat>) in.readObject();
+			
+			GImage imatge;
+			for(Soldat soldat : soldats){
+				if(soldat.getAmic()){
+					imatge = new GImage("soldadobueno.png");
+				}else{
+					imatge = new GImage("soldadomalo.png");
+				}
+				imatge.setSize(AMPLADASOLDAT, ALTURASOLDAT);
+				soldat.setImatge(imatge);
+				add(soldat.getImatge(), soldat.getX(), soldat.getY());
+			}
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void save(){
 		try {
-			FileOutputStream archivo = new FileOutputStream("siSabe");
+			FileOutputStream archivo = new FileOutputStream("guardat");
 			ObjectOutputStream guarda  = new ObjectOutputStream(archivo);
 			guarda.writeObject(soldats);
 		} catch (FileNotFoundException e) {
