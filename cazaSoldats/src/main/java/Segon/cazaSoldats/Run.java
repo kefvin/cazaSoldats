@@ -39,11 +39,10 @@ public class Run {
 				Soldat soldat = soldatt.next();
 				soldat.moure();
 				if (soldatEscapat(soldat) || comprovaSoldatClicat(soldat)) {
-					soldatt.remove();
-				}; // "Mata" els soldats si s'escapen
+					soldatt.remove();// "Mata" els soldats si s'escapen
+				}; 
 				
-				pantalla.pause(30);
-				// Crea la pausa
+				pantalla.pause(30);// Crea la pausa
 			}
 		}
 		// Poner mensage par cuando pierdes
@@ -52,7 +51,6 @@ public class Run {
 	public boolean soldatEscapat(Soldat soldat){
 		if(soldat.getX() < 0 - AMPLADASOLDAT || soldat.getX() > AMPLADAPANTALLA){
 			pantalla.remove(soldat.getImatge());
-			// soldats.remove(soldat);
 			if(!soldat.getAmic()){
 				pantalla.actualitzarMarcadorEscapat();
 			}
@@ -64,7 +62,6 @@ public class Run {
 	public boolean comprovaSoldatClicat(Soldat soldat){
 		if(soldat.getMort()){
 			pantalla.remove(soldat.getImatge());
-			//soldats.remove(soldat);
 			if(soldat.getAmic()){
 				escapats = 5;
 			}else{

@@ -15,23 +15,22 @@ public class Soldat implements Serializable{
 	transient GImage imatge;
 	int movilitat = 10;
 	boolean mort = false;
+	int AMPLADASOLDAT;
+	int ALTURASOLDAT;
 
-	public Soldat(boolean amic2, GImage img, int d){
+	public Soldat(boolean amic2, GImage img, int d, int am, int al){
 		amic = amic2;
 		x = (int) img.getX();
 		y = (int) img.getY();
 		imatge = img;
 		imatge.addMouseListener(new MouseAdapter(){
 			public void mousePressed(MouseEvent e) {
-				// Crear boolean "mort" y luego en run mirar si está en true y hacer pantalla.remove(imagen)
-				
 				mort = true;
 		    }
 		});
 		movilitat *= d;
-		//Añadir mouse listener a la imagen, tener en cuenta que al guardar
-		// y abrir el programa hay que volver a poner el mouse listener.
-		// Añadir GImage al Cargar el programa si hay datos guardados
+		AMPLADASOLDAT = am;
+		ALTURASOLDAT = al;
 	}
 	
 	public void moure(){
@@ -70,10 +69,10 @@ public class Soldat implements Serializable{
 
 	public void setImatge(GImage imatge) {
 		this.imatge = imatge;
+		this.imatge.setSize(AMPLADASOLDAT, ALTURASOLDAT);
+		this.imatge.setLocation(x, y);
 		this.imatge.addMouseListener(new MouseAdapter(){
 			public void mousePressed(MouseEvent e) {
-				// Crear boolean "mort" y luego en run mirar si está en true y hacer pantalla.remove(imagen)
-				
 				mort = true;
 		    }
 		});

@@ -31,10 +31,11 @@ public class App extends GraphicsProgram
 	public int gameOver = 5;
 	List<Soldat> soldats = new ArrayList();
 	Run runner = null;
+	Marcador resultat = new Marcador();
 	
 	
 	/*
-	 * No se crean correctamente en la X y la Y, no se guarda el arcador y no se borra el archivo
+	 * Marcador a 0
 	 * 
 	 */
 
@@ -66,6 +67,7 @@ public class App extends GraphicsProgram
 		add(label, x, y);
 		waitForClick();
 		remove(label);
+		marcador.setLabel("Morts: "+morts+" Escapats: "+escapats);
 	}
 
 	public int actualitzarMarcadorEscapat(){
@@ -98,7 +100,6 @@ public class App extends GraphicsProgram
 
 		int y = rand.nextInt((int) (ALTURAPANTALLA - imatge.getHeight()));
 		imatge.setLocation(aparicio, y);
-		imatge.setSize(AMPLADASOLDAT, ALTURASOLDAT);
 		
 		if(aparicio < 0){
 			direccio = 1;
@@ -106,21 +107,40 @@ public class App extends GraphicsProgram
 			direccio = -1;
 		}
 
-		Soldat soldat = new Soldat(amicSegur, imatge, direccio);
+		Soldat soldat = new Soldat(amicSegur, imatge, direccio, AMPLADASOLDAT, ALTURASOLDAT);
 
+		imatge.setSize(AMPLADASOLDAT, ALTURASOLDAT);
 		add(soldat.getImatge(), soldat.getX(), soldat.getY());
 
 		return soldat;
 	}
 	
+//	@SuppressWarnings("unchecked")
 	private void buscaPartidaGuardada() {
 		try {
-			File esta = new File("guardat");
-			System.out.println(esta.getAbsolutePath());
-			if(esta.exists()){
-			FileInputStream archivo = new FileInputStream("guardat");
-			ObjectInputStream in = new ObjectInputStream(archivo);
-			soldats = (List<Soldat>) in.readObject();
+//			ObjectInputStream input = recuperaArxius("guardaSoldats");
+//			soldats = (List<Soldat>) input.readObject();
+//			input = recuperaArxius("guardaMarcador");
+//			resultat = (Marcador) input.readObject();
+			
+			File guardaSoldats = new File("guardaSoldats");
+			File guardaMarcador = new File("guardaMarcador");
+			
+			if(guardaSoldats.exists() && guardaMarcador.exists()){
+				
+			FileInputStream arxiuSoldats = new FileInputStream("guardaSoldats");
+			ObjectInputStream inSoldats = new ObjectInputStream(arxiuSoldats);
+			soldats = (List<Soldat>) inSoldats.readObject();
+			arxiuSoldats.close();
+			guardaSoldats.delete();
+			
+			FileInputStream arxiuMarcador = new FileInputStream("guardaMarcador");
+			ObjectInputStream inMarcador = new ObjectInputStream(arxiuMarcador);
+			resultat = (Marcador) inMarcador.readObject();
+			arxiuMarcador.close();
+			guardaMarcador.delete();
+			
+			reescriuMarcador();
 			
 			GImage imatge;
 			for(Soldat soldat : soldats){
@@ -129,9 +149,8 @@ public class App extends GraphicsProgram
 				}else{
 					imatge = new GImage("soldadomalo.png");
 				}
-				imatge.setSize(AMPLADASOLDAT, ALTURASOLDAT);
 				soldat.setImatge(imatge);
-				add(soldat.getImatge(), soldat.getX(), soldat.getY());
+				add(soldat.getImatge());
 			}
 			}
 		} catch (FileNotFoundException e) {
@@ -146,12 +165,44 @@ public class App extends GraphicsProgram
 		}
 		
 	}
-	
+
+
+//	private ObjectInputStream recuperaArxius(String nomArxiu){
+//		try {
+//			File guardaSoldats = new File(nomArxiu);
+//			System.out.println(guardaSoldats.getAbsolutePath());
+//			ObjectInputStream inSoldats = null;
+//			if(guardaSoldats.exists()){
+//			FileInputStream arxiuSoldats = new FileInputStream(nomArxiu);
+//			inSoldats = new ObjectInputStream(arxiuSoldats);
+//			arxiuSoldats.close();
+//			guardaSoldats.delete();
+//		}
+//		return inSoldats;
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//		}
+//		return null
+//	}
+
+	private void reescriuMarcador() {
+
+		morts = resultat.getMorts();
+		escapats = resultat.getEscapats();
+	}
+
 	public void save(){
 		try {
-			FileOutputStream archivo = new FileOutputStream("guardat");
-			ObjectOutputStream guarda  = new ObjectOutputStream(archivo);
-			guarda.writeObject(soldats);
+			FileOutputStream arciuSoldats = new FileOutputStream("guardaSoldats");
+			ObjectOutputStream guardaSoldats  = new ObjectOutputStream(arciuSoldats);
+			guardaSoldats.writeObject(soldats);
+			FileOutputStream arciuMarcador = new FileOutputStream("guardaMarcador");
+			ObjectOutputStream guardaMarcador  = new ObjectOutputStream(arciuMarcador);
+			guardaMarcador.writeObject(resultat);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -168,15 +219,21 @@ public class App extends GraphicsProgram
 		switch( keyCode ) { 
 		case KeyEvent.VK_S:
 			runner.actualiza();
+			actualitzaMarcador();
 			save();
 			System.exit(0); // Cierra el programa
 			break;		
 		case KeyEvent.VK_X:
-			//fitxerCavallers.delete();
-			//fitxerContador.delete();
 			System.exit(0); // Cierra el programa
 			break;
+			
 		}
+	}
+
+	private void actualitzaMarcador() {
+
+		resultat.setMorts(morts);
+		resultat.setEscapats(escapats);		
 	}
 
 }
